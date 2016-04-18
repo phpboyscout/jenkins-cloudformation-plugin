@@ -43,22 +43,28 @@ public class SimpleStackBean extends AbstractDescribableImpl<SimpleStackBean> {
 	 */
 	private Region awsRegion;
         
-    private Boolean isPrefixSelected;
+	private Boolean isPrefixSelected;
+
+	/**
+	 * number of stack to retain on tear down
+	 */
+	private long retainStacksQty = 1;
 
     /**
      * if previous stacks fail cascade to prevent other stacks building
      */
     private boolean failCascade = false;
-       
+
  
 	@DataBoundConstructor
 	public SimpleStackBean(String stackName, String awsAccessKey,
-			String awsSecretKey, Region awsRegion,Boolean isPrefixSelected, boolean failCascade) {
+			String awsSecretKey, Region awsRegion,Boolean isPrefixSelected, boolean failCascade, long retainStacksQty) {
 		this.stackName = stackName;
 		this.awsAccessKey = awsAccessKey;
 		this.awsSecretKey = awsSecretKey;
 		this.awsRegion = awsRegion != null ? awsRegion : Region.getDefault();
-        this.isPrefixSelected=isPrefixSelected;
+		this.isPrefixSelected=isPrefixSelected;
+		this.retainStacksQty = retainStacksQty;
         this.failCascade = failCascade;
 	}
 
@@ -73,9 +79,14 @@ public class SimpleStackBean extends AbstractDescribableImpl<SimpleStackBean> {
 	public String getAwsSecretKey() {
 		return awsSecretKey;
 	}
-       public Boolean getIsPrefixSelected() {
+
+    public Boolean getIsPrefixSelected() {
 		return isPrefixSelected;
 	}
+
+    public long getRetainStacksQty() {
+        return retainStacksQty;
+    }
 
 	public String getParsedAwsAccessKey(EnvVars env) {
 		return env.expand(getAwsAccessKey());
@@ -110,6 +121,19 @@ public class SimpleStackBean extends AbstractDescribableImpl<SimpleStackBean> {
 			}
 			return FormValidation.ok();
 		}
+
+        public FormValidation doCheckretainStacksQty(
+                @AncestorInPath AbstractProject<?, ?> project,
+                @QueryParameter String value) throws IOException {
+            if (value.length() > 0) {
+                try {
+                    Long.parseLong(value);
+                } catch (NumberFormatException e) {
+                    return FormValidation.error("Retain Stack Qty value "+ value + " is not a number.");
+                }
+            }
+            return FormValidation.ok();
+        }
 
 		public FormValidation doCheckAwsAccessKey(
 				@AncestorInPath AbstractProject<?, ?> project,
