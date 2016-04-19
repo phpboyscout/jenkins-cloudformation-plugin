@@ -48,6 +48,11 @@ public class StackBean extends AbstractDescribableImpl<StackBean> {
 	 * Time to wait for a stack to be created before giving up and failing the build. 
 	 */
 	private long timeout;
+
+	/**
+	 * Number of seconds to wait before checking with AWS for stack progress
+	 */
+	private long checkInterval;
 	
 	/**
 	 * The access key to call Amazon's APIs
@@ -74,7 +79,7 @@ public class StackBean extends AbstractDescribableImpl<StackBean> {
 	@DataBoundConstructor
 	public StackBean(String stackName, String description,
 			String cloudFormationRecipe, String parameters, long timeout,
-			String awsAccessKey, String awsSecretKey, boolean autoDeleteStack, Region awsRegion, boolean failCascade) {
+			String awsAccessKey, String awsSecretKey, boolean autoDeleteStack, Region awsRegion, long checkInterval, boolean failCascade) {
 		super();
 		this.stackName = stackName;
 		this.description = description;
@@ -86,6 +91,7 @@ public class StackBean extends AbstractDescribableImpl<StackBean> {
         this.autoDeleteStack = autoDeleteStack;
         this.awsRegion = awsRegion;
 		this.failCascade = failCascade;
+		this.checkInterval = checkInterval;
 	}
 
 	public String getStackName() {
@@ -106,6 +112,10 @@ public class StackBean extends AbstractDescribableImpl<StackBean> {
 
 	public long getTimeout() {
 		return timeout;
+	}
+
+	public long getCheckInterval() {
+		return checkInterval;
 	}
 
 	public String getAwsAccessKey() {
@@ -179,6 +189,19 @@ public class StackBean extends AbstractDescribableImpl<StackBean> {
 		}
 
 		public FormValidation doCheckTimeout(
+				@AncestorInPath AbstractProject<?, ?> project,
+				@QueryParameter String value) throws IOException {
+			if (value.length() > 0) {
+				try {
+					Long.parseLong(value);
+				} catch (NumberFormatException e) {
+					return FormValidation.error("Timeout value "+ value + " is not a number.");
+				}
+			}
+			return FormValidation.ok();
+		}
+
+		public FormValidation doCheckCheckInterval(
 				@AncestorInPath AbstractProject<?, ?> project,
 				@QueryParameter String value) throws IOException {
 			if (value.length() > 0) {
