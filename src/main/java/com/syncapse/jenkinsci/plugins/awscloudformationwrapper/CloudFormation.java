@@ -372,7 +372,8 @@ public class CloudFormation {
                   return false;
               }
 
-              logger.println("Stack status " + stackStatus + ".");
+                logger.print(".");
+//              logger.println("Stack status " + stackStatus + ".");
 
             } catch (AmazonServiceException ase) {
                 if (!RetryUtils.isThrottlingException(ase)) {
