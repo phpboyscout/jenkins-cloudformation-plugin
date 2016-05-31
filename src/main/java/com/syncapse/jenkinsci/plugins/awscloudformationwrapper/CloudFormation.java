@@ -244,6 +244,7 @@ public class CloudFormation {
         amazonClient.deleteStack(deleteStackRequest);
         boolean result = waitForStackToBeDeleted();
 
+        logger.println("");
         logger.println("Cloud Formation stack: " + getExpandedStackName()
                 + (result ? " deleted successfully" : " failed deleting."));
         return result;
@@ -562,9 +563,13 @@ public class CloudFormation {
                 filteredStackSummries.add(summary);
             }
         }
+
+        logger.println(filteredStackSummries.size()+ " stacks found matching prefix");
+        logger.println("Retaining a minimum of " + retainStacksQty + " stacks");
         if (filteredStackSummries.isEmpty() || filteredStackSummries.size() <= retainStacksQty) {
             return null;
         }
+
         return returnOldestStackName(filteredStackSummries);
 
     }
@@ -598,7 +603,6 @@ public class CloudFormation {
         List<String> stackStatusFilters = new ArrayList<String>();
         stackStatusFilters.add("UPDATE_COMPLETE");
         stackStatusFilters.add("CREATE_COMPLETE");
-        stackStatusFilters.add("ROLLBACK_COMPLETE");
 
         ListStacksRequest request = new ListStacksRequest();
         request.setStackStatusFilters(stackStatusFilters);

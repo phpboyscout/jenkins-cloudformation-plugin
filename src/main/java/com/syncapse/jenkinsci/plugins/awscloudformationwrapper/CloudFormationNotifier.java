@@ -84,6 +84,7 @@ public class CloudFormationNotifier extends Notifier {
                     false,
                     envVars,
                     stack.getIsPrefixSelected(),
+					0,
                     stack.getRetainStacksQty()
             );
             if (cloudFormation.delete()) {
